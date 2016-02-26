@@ -91,8 +91,10 @@
 	    <option value=2{% if pro['status'] == 2 %} selected{% end %}>Offline</option>
 	</select>
         <select class="class">
-	    <option value=1{% if pro['class'] == 1 %} selected{% end %}>Language</option>
+	    <option value=0{% if pro['class'] == 0 %} selected{% end %}>Other</option>
+	    <option value=1{% if pro['class'] == 1 %} selected{% end %}>CLang</option>
 	    <option value=2{% if pro['class'] == 2 %} selected{% end %}>Algorithm</option>
+	    <option value=3{% if pro['class'] == 3 %} selected{% end %}>PyLang</option>
 	</select>
         <input type="text" class="expire" value="{% if pro['expire'] != None %}{{ pro['expire'].strftime('%Y/%m/%d %H:%M') }}{% end %}" placeholder="Expire [Year / Month / Day Hour : Minute]">
 

@@ -40,13 +40,15 @@
 	<select class="type">
 	    <option value=0{% if acct['acct_type'] == 0 %} selected{% end %}>Kernel</option>
 	    <option value=3{% if acct['acct_type'] == 3 %} selected{% end %}>User</option>
+	    <option value=9{% if acct['acct_type'] == 9 %} selected{% end %}>Guest</option>
 	</select>
 
         <label>Class</label>
         <select class="class">
-	    <option value=0{% if acct['class'] == 1 %} selected{% end %}>Other</option>
-	    <option value=1{% if acct['class'] == 1 %} selected{% end %}>Language</option>
+	    <option value=0{% if acct['class'] == 0 %} selected{% end %}>Other</option>
+	    <option value=1{% if acct['class'] == 1 %} selected{% end %}>CLang</option>
 	    <option value=2{% if acct['class'] == 2 %} selected{% end %}>Algorithm</option>
+	    <option value=3{% if acct['class'] == 3 %} selected{% end %}>PyLang</option>
 	</select>
 
 	<button class="btn-con submit">Update</button>

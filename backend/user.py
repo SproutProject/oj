@@ -15,6 +15,7 @@ class UserConst:
 
     ACCTTYPE_KERNEL = 0
     ACCTTYPE_USER = 3
+    ACCTTYPE_GUEST = 9
 
     ACCTID_GUEST = 0
 
@@ -28,6 +29,7 @@ class UserService:
 
     ACCTTYPE_KERNEL = 0
     ACCTTYPE_USER = 3
+    ACCTTYPE_GUEST = 9
 
     ACCTID_GUEST = 0
 

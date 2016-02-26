@@ -4,6 +4,7 @@ from req import RequestHandler
 from req import reqenv
 from user import UserService
 from pro import ProService
+from pro import ProConst
 from chal import ChalService
 from pack import PackService
 
@@ -21,10 +22,12 @@ class AcctHandler(RequestHandler):
         yield cur.execute(('SELECT '
                 'SUM("test_valid_rate"."rate" * '
                 '    CASE WHEN "valid_test"."timestamp" < "valid_test"."expire" '
-                '    THEN 1 ELSE '
+                '    THEN 1 ELSE CASE WHEN '
+                '    "valid_test"."timestamp" > "valid_test"."expire" + \'6 days\' '
+                '    THEN 0 ELSE '
                 '    (1 - (GREATEST(date_part(\'days\',justify_interval('
                 '    age("valid_test"."timestamp","valid_test"."expire") '
-                '    + \'1 days\')),-1)) * 0.15) '
+                '    + \'1 days\')),-1)) * 0.15) END '
                 '    END) '
                 'AS "rate" FROM "test_valid_rate" '
                 'INNER JOIN ('
@@ -37,12 +40,13 @@ class AcctHandler(RequestHandler):
                 '    ON "test"."pro_id" = "problem"."pro_id" '
                 '    WHERE "account"."acct_id" = %s '
                 '    AND "test"."state" = %s '
+                '    AND "problem"."status" = %s '
                 '    AND "account"."class" && "problem"."class" '
                 '    GROUP BY "test"."pro_id","test"."test_idx","problem"."expire"'
                 ') AS "valid_test" '
                 'ON "test_valid_rate"."pro_id" = "valid_test"."pro_id" '
                 'AND "test_valid_rate"."test_idx" = "valid_test"."test_idx";'),
-                (acct_id,ChalService.STATE_AC))
+                (acct_id,ChalService.STATE_AC,ProConst.STATUS_ONLINE))
         if cur.rowcount != 1:
             self.finish('Unknown')
             return
@@ -52,7 +56,7 @@ class AcctHandler(RequestHandler):
             rate = 0
 
         extrate = 0
-        if acct['class'] == 0:
+        if True or acct['class'] == 0:
             cur = yield self.db.cursor()
             yield cur.execute(('SELECT '
                     'SUM("test_valid_rate"."rate") '
@@ -60,16 +64,19 @@ class AcctHandler(RequestHandler):
                     'INNER JOIN ('
                     '    SELECT "test"."pro_id","test"."test_idx" '
                     '    FROM "test" '
+                    '    INNER JOIN "account" '
+                    '    ON "test"."acct_id" = "account"."acct_id" '
                     '    INNER JOIN "problem" '
                     '    ON "test"."pro_id" = "problem"."pro_id" '
                     '    WHERE "test"."acct_id" = %s '
                     '    AND "test"."state" = %s '
-                    '    AND %s && "problem"."class" '
+                    #'    AND "account"."class" && "problem"."class" '
                     '    GROUP BY "test"."pro_id","test"."test_idx"'
                     ') AS "valid_test" '
                     'ON "test_valid_rate"."pro_id" = "valid_test"."pro_id" '
                     'AND "test_valid_rate"."test_idx" = "valid_test"."test_idx";'),
-                    (acct_id,ChalService.STATE_AC,[2]))
+                    #(acct_id,ChalService.STATE_AC,[0]))
+                    (acct_id,ChalService.STATE_AC))
             if cur.rowcount != 1:
                 self.finish('Unknown')
                 return

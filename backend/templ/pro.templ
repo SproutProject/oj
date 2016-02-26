@@ -19,6 +19,7 @@
         }
         function _load_pdf(){
             PDFJS.getDocument('/oj/pro/{{ pro['pro_id'] }}/cont.pdf').then(function(pdf){
+		//$('.btn-pdf').show();
                 var i;
 
                 j_cont.empty();
@@ -73,6 +74,8 @@
 <div id="side" class="g-lg-2 blk-cont">
     <h3>{{ pro['pro_id']}} / {{ pro['name'] }}</h3>
     <a class="btn-pri" href="/oj/submit/{{ pro['pro_id'] }}/">Submit</a>
+    <!--iframe id="my_iframe" style='display:none;'></iframe>
+    <a class="btn-pri btn-pdf" style="display:none;"  onclick="document.getElementById(&quot;my_iframe&quot;).src = &quot;/oj/pro/{{ pro['pro_id'] }}/cont.pdf&quot;;">Download</a-->
     <table>
 	<thead>
 	    <tr>
@@ -81,6 +84,10 @@
 	    </tr>
 	</thead>
 	<tbody>
+	    <tr>
+		<td>compiler</td>
+                <td>{{ testl[0]['comp_type'] }}</td>
+	    </tr>
 	    <tr>
 		<td>time</td>
                 <td>{{ testl[0]['timelimit'] }}</td>

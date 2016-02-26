@@ -55,10 +55,12 @@ class RateService:
             '    SELECT "challenge"."acct_id","challenge"."pro_id",'
             '    MAX("challenge_state"."rate" * '
             '        CASE WHEN "challenge"."timestamp" < "problem"."expire" '
-            '        THEN 1 ELSE '
+            '        THEN 1 ELSE CASE WHEN '
+            '        "challenge"."timestamp" > "problem"."expire" + \'6 days\''
+            '        THEN 0 ELSE    '
             '        (1 - (GREATEST(date_part(\'days\',justify_interval('
             '        age("challenge"."timestamp","problem"."expire") '
-            '        + \'1 days\')),-1)) * 0.15) '
+            '        + \'1 days\')),-1)) * 0.15 ) END '
             '        END) '
             '    AS "rate" '
             '    FROM "challenge" '
@@ -201,17 +203,18 @@ class ScbdHandler(RequestHandler):
         for acct_id,rate in cur:
             fullmap[acct_id] = rate
 
+        clean_acctlist = []
         for acct in acctlist:
             acct_id = acct['acct_id']
             if acct_id in fullmap:
                 fullrate = fullmap[acct_id]
                 acct['level'] = self._get_level(acct['rate'] / fullrate)
-
-            else:
-                acct['level'] = None
+                clean_acctlist.append(acct)
+        acctlist = clean_acctlist
 
         alglist = list()
         langlist = list()
+        pylanglist = list()
         for pro in prolist:
             clas = pro['class']
             if clas == 2:
@@ -220,9 +223,13 @@ class ScbdHandler(RequestHandler):
             elif clas == 1:
                 langlist.append(pro)
 
+            elif clas == 3:
+                pylanglist.append(pro)
+
         self.render('scbd',
                 acctlist = acctlist,
                 alglist = alglist,
                 langlist = langlist,
+                pylanglist = pylanglist,
                 statemap = statemap)
         return

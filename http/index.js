@@ -48,8 +48,10 @@ var index = new function(){
 	}else{
 	    page = parts[4];
 	    req = '';
-	    for(i = 4;i < parts.length - 1;i++){
-		req += '/' + parts[i];
+	    for(i = 4;i < parts.length;i++){
+		if(i<parts.length-1 || 
+			(parts[i].length>0 && parts[i].indexOf('?') == -1))
+		    req += '/' + parts[i];
 	    }
 
 	    parts = parts[parts.length - 1].match(/\?([^#]+)/);
@@ -197,10 +199,15 @@ var index = new function(){
         j_input.attr('list',listid);
         j_sel = $('<div class="sel"></div>')
 
+        j_input.on('keypress',function(e){
+            if(e.which == 8 && j_input.val() == ''){
+                $(j_sel.children()[0]).remove();
+            }
+        });
         j_input.on('keyup',function(e){
             var j_item;
 
-            if(e.which == 13){
+            if(e.which == 13 && j_input.val() != ''){
                 j_item = $('<span></span>');
                 j_item.text(j_input.val());
                 j_item.append($('<span class="del">&#10006;</span>'));
@@ -208,7 +215,7 @@ var index = new function(){
                     $(this).parent('span').remove();
                 });
 
-                j_sel.append(j_item);
+                j_sel.prepend(j_item);
                 j_input.val('');
             }
         });

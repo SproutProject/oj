@@ -13,6 +13,7 @@ from req import reqenv
 from user import UserService
 from chal import ChalService
 from pack import PackService
+from req import Service
 
 class ProConst:
     NAME_MIN = 1
@@ -97,7 +98,7 @@ class ProService:
             max_status = self._get_acct_limit(acct)
 
         if clas == None:
-            clas = [1,2]
+            clas = [0,1,2,3]
 
         else:
             clas = [clas]
@@ -200,7 +201,7 @@ class ProService:
         if (status < ProService.STATUS_ONLINE or
                 status > ProService.STATUS_OFFLINE):
             return ('Eparam',None)
-        if clas not in [1,2]:
+        if clas not in [0,1,2,3]:
             return ('Eparam',None)
 
         if expire == None:
@@ -237,7 +238,7 @@ class ProService:
         if (status < ProService.STATUS_ONLINE or
                 status > ProService.STATUS_OFFLINE):
             return ('Eparam',None)
-        if clas not in [1,2]:
+        if clas not in [0,1,2,3]:
             return ('Eparam',None)
 
         if expire == None:
@@ -402,6 +403,7 @@ class ProHandler(RequestHandler):
         for test_idx,test_conf in pro['testm_conf'].items():
             testl.append({
                 'test_idx':test_idx,
+                'comp_type':test_conf['comp_type'],
                 'timelimit':test_conf['timelimit'],
                 'memlimit':test_conf['memlimit'],
                 'weight':test_conf['weight'],
@@ -484,14 +486,53 @@ class SubmitHandler(RequestHandler):
 
             chal_id = int(self.get_argument('chal_id'))
 
-            err,ret = yield from ChalService.inst.reset_chal(chal_id)
-            err,chal = yield from ChalService.inst.get_chal(chal_id,self.acct)
-
-            pro_id = chal['pro_id']
-            err,pro = yield from ProService.inst.get_pro(pro_id,self.acct)
-            if err:
-                self.finish(err)
-                return
+            try:
+                chal_id_start = chal_id
+                chal_id_end = int(self.get_argument('chal_id_end'))
+            except:
+                chal_id_start = None
+            
+            if chal_id_start is not None:
+                for chal_id in range(chal_id_start, chal_id_end + 1):
+                    err,chal = yield from ChalService.inst.get_chal(chal_id, 
+                                                                self.acct)
+                    pro_id = chal['pro_id']
+                    err,pro = yield from Service.Pro.get_pro(pro_id,self.acct) 
+                    err,ret = yield from Service.Chal.reset_chal(chal_id)
+                    err,ret = yield from Service.Chal.emit_chal(
+                            chal_id,
+                            pro_id,
+                            pro['testm_conf'],
+                            os.path.abspath('code/%d/main.cpp'%chal_id),
+                            os.path.abspath('problem/%d/res'%pro_id))
+            elif chal_id == 10:
+                x = yield self.db.cursor()
+                yield x.execute(('SELECT DISTINCT "chal_id" FROM "test" '
+                                   'WHERE "state" = 100'))
+                for chal_id, in x:
+                    try:
+                        err,chal = yield from ChalService.inst.get_chal(chal_id, 
+                                                                    self.acct)
+                        pro_id = chal['pro_id']
+                        err,pro = yield from Service.Pro.get_pro(pro_id,self.acct) 
+                        err,ret = yield from Service.Chal.reset_chal(chal_id)
+                        err,ret = yield from Service.Chal.emit_chal(
+                                chal_id,
+                                pro_id,
+                                pro['testm_conf'],
+                                os.path.abspath('code/%d/main.cpp'%chal_id),
+                                os.path.abspath('problem/%d/res'%pro_id))
+                    except:
+                        pass
+            else:
+                err,ret = yield from ChalService.inst.reset_chal(chal_id)
+                err,chal = yield from ChalService.inst.get_chal(chal_id, 
+                                                                self.acct)
+                pro_id = chal['pro_id']
+                err,pro = yield from ProService.inst.get_pro(pro_id,self.acct)
+                if err:
+                    self.finish(err)
+                    return
 
         else:
             self.finish('Eparam')

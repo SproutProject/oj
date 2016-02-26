@@ -30,15 +30,19 @@
                 Kernel
             {% elif acct['acct_type'] == 3 %}
                 User
+            {% elif acct['acct_type'] == 9 %}
+                Guest
             {% end %}
             </td>
             <td>
             {% if acct['class'] == 0 %}
                 Other
             {% elif acct['class'] == 1 %}
-                Language
+                CLang
             {% elif acct['class'] == 2 %}
                 Algorithm
+            {% elif acct['class'] == 3 %}
+		PyLang
             {% end %}
             </td>
             <td>

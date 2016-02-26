@@ -20,11 +20,19 @@
         });
 
         $('#signin button.signup').on('click',function(e){
+            $('body').addClass('dark');
+            $('#intro').show();     
+            $('#signin').hide();     
+            $('#signup').show();     
+            $('#sign').show();     
+            $('#warning').hide();
+
+	    /*
             $('#intro').hide();     
             $('#sign').hide();     
-
             $('body').removeClass('dark');
             $('#warning').show();
+	    */
         });
 
         $('#signin > button.submit').on('click',function(e){

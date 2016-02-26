@@ -104,18 +104,22 @@ class ChalService:
 
         pro_id,acct_id,timestamp,acct_name = cur.fetchone()
 
-        yield cur.execute(('SELECT "test_idx","state","runtime","memory" '
-            'FROM "test" '
-            'WHERE "chal_id" = %s ORDER BY "test_idx" ASC;'),
+        yield cur.execute(('SELECT "test"."test_idx","test"."state",'
+            '"test"."runtime","test"."memory","test_config"."metadata" '
+            'FROM "test" LEFT JOIN "test_config" '
+            'ON "test"."pro_id" = "test_config"."pro_id" '
+            'AND "test"."test_idx" = "test_config"."test_idx"'
+            'WHERE "test"."chal_id" = %s ORDER BY "test"."test_idx" ASC;'),
             (chal_id,))
 
         testl = list()
-        for test_idx,state,runtime,memory in cur:
+        for test_idx,state,runtime,memory,metadata in cur:
             testl.append({
                 'test_idx':test_idx,
                 'state':state,
                 'runtime':int(runtime),
                 'memory':int(memory),
+                'count':len(json.loads(metadata,'utf-8')['data']),
             })
         
         if (acct['acct_id'] == acct_id or
@@ -168,7 +172,7 @@ class ChalService:
         yield cur.execute('REFRESH MATERIALIZED VIEW challenge_state;')
 
         if self.ws == None:
-            self.ws = yield websocket_connect('ws://localhost:2501/judge')
+            self.ws = yield websocket_connect('ws://10.8.0.1:2501/judge')
 
         self.ws.write_message(json.dumps({
             'chal_id':chal_id,
@@ -284,7 +288,7 @@ class ChalService:
     @coroutine
     def _collect_judge(self):
         if self.ws == None:
-            self.ws = yield websocket_connect('ws://localhost:2501/judge')
+            self.ws = yield websocket_connect('ws://10.8.0.1:2501/judge')
 
         while True:
             ret = yield self.ws.read_message()

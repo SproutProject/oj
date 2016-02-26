@@ -499,10 +499,8 @@ div.blk-prog{
 }
 
 div.tagbox{
-    padding:1px 1px;
     background-color:@white;
     border:@gray 1px solid;
-    font-family:monospace;
 
     &:hover{
 	border:lighten(@gray,3%) 1px dashed;
@@ -510,17 +508,17 @@ div.tagbox{
 
     & > input{
         width:100%;
-        font-size:@fs-sm;
         border-width:0px;
     }
     & > div.sel{
-        padding:0px 4px 0px 4px;
+        padding:0px 8px 0px 8px;
+        font-family:monospace;
 
         & > span{
             width:100%;
             line-height:@fs-sm;
-            margin-bottom:4px;
-            padding:8px 8px;
+            margin-bottom:8px;
+            padding:8px 4px;
             box-sizing:border-box;
             background-color:@blue;
             border:darken(@blue,8%) 1px dashed;
